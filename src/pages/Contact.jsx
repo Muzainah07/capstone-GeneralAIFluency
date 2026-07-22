@@ -8,11 +8,6 @@ const emailHref = `mailto:${emailAddress}?subject=${encodeURIComponent(emailSubj
 
 const contactLinks = [
   {
-    label: 'Email',
-    href: emailHref,
-    icon: '✉️',
-  },
-  {
     label: 'LinkedIn',
     href: 'https://www.linkedin.com/in/muzainah-faisal-9b73ab28a',
     icon: 'in',
@@ -53,12 +48,6 @@ export default function Contact() {
     const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID?.trim()
     const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID?.trim()
     const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY?.trim()
-
-    console.log('EmailJS env check:', {
-      hasPublicKey: Boolean(publicKey),
-      hasServiceId: Boolean(serviceId),
-      hasTemplateId: Boolean(templateId),
-    })
 
     if (!serviceId || !templateId || !publicKey) {
       setStatus('error')
@@ -186,14 +175,23 @@ export default function Contact() {
           <div className="info-card">
             <h2>Social Links</h2>
             <div className="social-links">
-              {contactLinks.map((link) => (
-                <a key={link.label} href={link.href} target="_blank" rel="noopener noreferrer">
-                  <span className="social-icon" aria-hidden="true">
-                    {link.icon}
-                  </span>
-                  {link.label}
-                </a>
-              ))}
+              {contactLinks.map((link) => {
+                const isExternal = link.href.startsWith('http')
+
+                return (
+                  <a
+                    key={link.label}
+                    href={link.href}
+                    target={isExternal ? '_blank' : undefined}
+                    rel={isExternal ? 'noopener noreferrer' : undefined}
+                  >
+                    <span className="social-icon" aria-hidden="true">
+                      {link.icon}
+                    </span>
+                    {link.label}
+                  </a>
+                )
+              })}
             </div>
           </div>
         </div>
