@@ -1,10 +1,15 @@
 import { useState } from 'react'
 import emailjs from '@emailjs/browser'
 
+const emailAddress = 'muzainahfaisal.mf@gmail.com'
+const emailSubject = 'Portfolio Contact'
+const emailBody = 'Hi Muzainah,\n\nI found your portfolio and would like to get in touch.'
+const emailHref = `mailto:${emailAddress}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`
+
 const contactLinks = [
   {
     label: 'Email',
-    href: 'mailto:muzainahfaisal.mf@gmail.com',
+    href: emailHref,
     icon: '✉️',
   },
   {
@@ -23,9 +28,20 @@ export default function Contact() {
   const [formData, setFormData] = useState({ name: '', email: '', subject: '', message: '' })
   const [status, setStatus] = useState('idle')
   const [errorMessage, setErrorMessage] = useState('')
+  const [copiedEmail, setCopiedEmail] = useState(false)
 
   function handleChange(event) {
     setFormData((current) => ({ ...current, [event.target.name]: event.target.value }))
+  }
+
+  async function handleCopyEmail() {
+    try {
+      await navigator.clipboard.writeText(emailAddress)
+      setCopiedEmail(true)
+      setTimeout(() => setCopiedEmail(false), 2000)
+    } catch (error) {
+      console.error('Failed to copy email:', error)
+    }
   }
 
   function handleSubmit(event) {
@@ -37,6 +53,12 @@ export default function Contact() {
     const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID?.trim()
     const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID?.trim()
     const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY?.trim()
+
+    console.log('EmailJS env check:', {
+      hasPublicKey: Boolean(publicKey),
+      hasServiceId: Boolean(serviceId),
+      hasTemplateId: Boolean(templateId),
+    })
 
     if (!serviceId || !templateId || !publicKey) {
       setStatus('error')
@@ -152,7 +174,12 @@ export default function Contact() {
         <div className="contact-sidebar">
           <div className="info-card">
             <h2>Contact Details</h2>
-            <p>Email: muzainahfaisal.mf@gmail.com</p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
+              <p style={{ margin: 0 }}>Email: {emailAddress}</p>
+              <button type="button" className="btn btn-secondary" onClick={handleCopyEmail}>
+                {copiedEmail ? 'Copied!' : 'Copy Email'}
+              </button>
+            </div>
             <p>Location: Karachi, Pakistan</p>
           </div>
 
