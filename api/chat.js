@@ -1,4 +1,8 @@
+import dotenv from 'dotenv'
 import { SYSTEM_PROMPT } from '../src/data/systemPrompt.js'
+import { buildLocalAssistantReply } from '../src/data/assistantProfile.js'
+
+dotenv.config({ path: '.env.local' })
 
 export default async function handler(request, response) {
   if (request.method !== 'POST') {
@@ -12,9 +16,11 @@ export default async function handler(request, response) {
     const model = process.env.LLM_MODEL || 'gpt-4o-mini'
 
     if (!apiKey || !apiUrl) {
-      return response.status(500).json({
-        error: 'Missing server-side environment variables',
-        details: 'The assistant is not configured yet. Please set LLM_API_KEY and LLM_API_URL in your Vercel environment settings.',
+      const lastMessage = messages[messages.length - 1]
+      const fallbackReply = buildLocalAssistantReply(lastMessage?.content || '')
+
+      return response.status(200).json({
+        reply: fallbackReply,
       })
     }
 
@@ -56,6 +62,11 @@ export default async function handler(request, response) {
 
     if (!llmResponse.ok) {
       const errorText = await llmResponse.text()
+      console.error('[assistant] Upstream LLM request failed', {
+        status: llmResponse.status,
+        statusText: llmResponse.statusText,
+        responseBody: errorText,
+      })
       return response.status(llmResponse.status).json({
         error: 'LLM request failed',
         details: errorText || 'Unknown error from upstream LLM provider',
@@ -67,6 +78,8 @@ export default async function handler(request, response) {
 
     return response.status(200).json({ reply })
   } catch (error) {
+    console.error('[assistant] Handler error', error)
+
     if (error.name === 'AbortError') {
       return response.status(504).json({
         error: 'Request timed out',

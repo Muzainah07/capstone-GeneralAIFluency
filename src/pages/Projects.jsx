@@ -1,3 +1,5 @@
+const githubRepositoriesUrl = 'https://github.com/Muzainah07?tab=repositories'
+
 const projects = [
   {
     title: 'Ranna Recipe App',
@@ -5,7 +7,7 @@ const projects = [
       'A modern recipe discovery experience focused on clean browsing and easy meal planning.',
     technologies: ['React', 'CSS', 'UI Design'],
     features: ['Recipe exploration flow', 'Clean visual hierarchy', 'Responsive layout'],
-    githubUrl: 'YOUR_GITHUB_REPO_URL',
+    githubUrl: githubRepositoriesUrl,
     image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=900&q=80',
   },
   {
@@ -14,7 +16,7 @@ const projects = [
       'A location-based app concept that highlights real-time positioning and responsive map interactions.',
     technologies: ['JavaScript', 'APIs', 'Frontend'],
     features: ['Live map experience', 'Interactive UI states', 'Mobile-first layout'],
-    githubUrl: 'YOUR_GITHUB_REPO_URL',
+    githubUrl: githubRepositoriesUrl,
     image: 'https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&w=900&q=80',
   },
   {
@@ -23,7 +25,7 @@ const projects = [
       'A collection of AI-assisted frontend tasks demonstrating practical implementation and experimentation.',
     technologies: ['React', 'AI', 'Vite'],
     features: ['AI-focused UI tasks', 'Rapid prototyping', 'Reusable component patterns'],
-    githubUrl: 'YOUR_GITHUB_REPO_URL',
+    githubUrl: githubRepositoriesUrl,
     image: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=900&q=80',
   },
 ]

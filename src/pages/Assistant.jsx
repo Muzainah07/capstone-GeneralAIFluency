@@ -62,10 +62,15 @@ export default function Assistant() {
       })
 
       let data = {}
+      let responseText = ''
       try {
-        data = await response.json()
-      } catch {
-        data = {}
+        responseText = await response.text()
+        if (responseText) {
+          data = JSON.parse(responseText)
+        }
+      } catch (parseError) {
+        console.error('[assistant] Failed to parse backend response', parseError, responseText)
+        data = { details: responseText || 'No response body received from the assistant.' }
       }
 
       if (!response.ok) {
@@ -91,8 +96,11 @@ export default function Assistant() {
       const friendlyError =
         err.message === 'Request timed out'
           ? 'The assistant is taking too long to respond. Please try again in a moment.'
-          : err.message || 'Something went wrong while contacting the assistant.'
+          : import.meta.env.DEV && err.message
+            ? `Debug: ${err.message}`
+            : 'Something went wrong while contacting the assistant.'
 
+      console.error('[assistant] Request failed', err)
       setError(friendlyError)
       setMessages((current) => [
         ...current,
