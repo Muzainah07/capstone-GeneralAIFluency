@@ -1,15 +1,15 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 const initialMessages = [
   {
     id: 1,
-    sender: 'assistant',
-    text: 'Hello! I can answer questions about Muzainah’s education, internship, skills, and projects.',
+    role: 'assistant',
+    content: 'Hello! I can answer questions about Muzainah’s education, internship, skills, and projects.',
   },
   {
     id: 2,
-    sender: 'user',
-    text: 'Tell me about her background.',
+    role: 'user',
+    content: 'Tell me about her background.',
   },
 ]
 
@@ -18,79 +18,88 @@ export default function Assistant() {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const messagesEndRef = useRef(null)
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages, loading])
 
   async function handleSubmit(event) {
     event.preventDefault()
 
     const trimmedInput = input.trim()
-    if (!trimmedInput) return
+    if (!trimmedInput) {
+      setError('Please enter a question before sending.')
+      return
+    }
+
+    if (loading) return
 
     const userMessage = {
       id: Date.now(),
-      sender: 'user',
-      text: trimmedInput,
+      role: 'user',
+      content: trimmedInput,
     }
 
-    setMessages((current) => [...current, userMessage])
+    const nextMessages = [...messages, userMessage]
+    setMessages(nextMessages)
     setInput('')
     setLoading(true)
     setError('')
 
     try {
-      const apiKey = import.meta.env.VITE_LLM_API_KEY
-      const apiUrl = import.meta.env.VITE_LLM_API_URL
-      const model = import.meta.env.VITE_LLM_MODEL || 'gpt-4o-mini'
-
-      if (!apiKey || !apiUrl) {
-        throw new Error('Please add your API key and endpoint to the .env file before chatting.')
-      }
-
-      const response = await fetch(apiUrl, {
+      const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${apiKey}`,
         },
         body: JSON.stringify({
-          model,
-          messages: [
-            {
-              role: 'system',
-              content:
-                'You are a helpful assistant for Muzainah Faisal’s portfolio website. Answer briefly and professionally using the following context: She is an AI and Frontend Developer, studied BS Computer Science at University of Karachi, interned at FlyRank AI in Front-End AI Engineering, and works with React, Vite, AI interfaces, and frontend development.',
-            },
-            ...messages.map((message) => ({
-              role: message.sender === 'user' ? 'user' : 'assistant',
-              content: message.text,
-            })),
-            { role: 'user', content: trimmedInput },
-          ],
+          messages: nextMessages.map((message) => ({
+            role: message.role,
+            content: message.content,
+          })),
         }),
       })
 
-      if (!response.ok) {
-        throw new Error('The assistant could not respond right now. Please check your API configuration.')
+      let data = {}
+      try {
+        data = await response.json()
+      } catch {
+        data = {}
       }
 
-      const data = await response.json()
-      const reply = data.choices?.[0]?.message?.content || 'I could not generate a reply.'
+      if (!response.ok) {
+        const message =
+          data?.details || data?.error || 'The assistant could not respond right now.'
+        throw new Error(message)
+      }
+
+      const reply = data.reply || 'I could not generate a reply.'
 
       setMessages((current) => [
         ...current,
         {
           id: Date.now() + 1,
-          sender: 'assistant',
-          text: reply,
+          role: 'assistant',
+          content: reply,
         },
       ])
     } catch (err) {
-      setError(err.message || 'Something went wrong while contacting the assistant.')
+      const fallbackMessage =
+        'Sorry, I’m having trouble responding right now. Please try again in a moment.'
+
+      const friendlyError =
+        err.message === 'Request timed out'
+          ? 'The assistant is taking too long to respond. Please try again in a moment.'
+          : err.message || 'Something went wrong while contacting the assistant.'
+
+      setError(friendlyError)
       setMessages((current) => [
         ...current,
         {
           id: Date.now() + 2,
-          sender: 'assistant',
-          text: 'I could not reach the assistant service. Please check your API setup.',
+          role: 'assistant',
+          content: fallbackMessage,
         },
       ])
     } finally {
@@ -108,8 +117,8 @@ export default function Assistant() {
       <div className="chat-shell">
         <div className="chat-messages">
           {messages.map((message) => (
-            <div key={message.id} className={`message ${message.sender}`}>
-              <p>{message.text}</p>
+            <div key={message.id} className={`message ${message.role === 'user' ? 'user' : 'assistant'}`}>
+              <p>{message.content}</p>
             </div>
           ))}
 
@@ -122,6 +131,8 @@ export default function Assistant() {
               </div>
             </div>
           )}
+
+          <div ref={messagesEndRef} />
         </div>
 
         {error && <p className="assistant-error">{error}</p>}
@@ -132,6 +143,7 @@ export default function Assistant() {
             value={input}
             onChange={(event) => setInput(event.target.value)}
             placeholder="Ask about education, skills, or projects"
+            disabled={loading}
           />
           <button type="submit" className="btn btn-primary" disabled={loading}>
             {loading ? 'Thinking...' : 'Send'}

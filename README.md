@@ -1,6 +1,10 @@
 # AI Portfolio Capstone
 
-A modern React + Vite portfolio website for Muzainah Faisal, featuring a responsive multi-page experience, a dark/light theme toggle, and an AI assistant page powered by a configurable LLM API.
+A modern React + Vite portfolio website for Muzainah Faisal, featuring a responsive multi-page experience, a dark/light theme toggle, and an AI assistant page powered by a secure serverless proxy.
+
+## Live Demo
+
+https://capstone-muzainah-portfolio.vercel.app/
 
 ## Project Overview
 
@@ -13,6 +17,7 @@ This project is a professional AI fluency capstone website built with React, Vit
 - Dark/light mode with local storage persistence
 - Reusable navigation and footer components
 - Modern chat-style AI assistant UI
+- Secure serverless AI proxy for LLM requests
 - Configurable LLM API integration via environment variables
 - Clean, professional styling with hover effects and animations
 
@@ -44,10 +49,12 @@ npm install
 Create a file named .env in the project root and add your values:
 
 ```env
-VITE_LLM_API_KEY=your_api_key_here
-VITE_LLM_API_URL=https://api.openai.com/v1/chat/completions
-VITE_LLM_MODEL=gpt-4o-mini
+LLM_API_KEY=your_api_key_here
+LLM_API_URL=https://api.openai.com/v1/chat/completions
+LLM_MODEL=gpt-4o-mini
 ```
+
+> These values must be set in Vercel's dashboard for deployment. They are server-side variables and should not be exposed in a client-side Vite environment file.
 
 You can also use the provided example file:
 
@@ -81,9 +88,15 @@ npm run preview
 
 | Variable | Description |
 | --- | --- |
-| VITE_LLM_API_KEY | API key for the LLM provider |
-| VITE_LLM_API_URL | Endpoint for the chat completions API |
-| VITE_LLM_MODEL | Model name to use for the assistant |
+| LLM_API_KEY | API key for the LLM provider, stored securely on the server |
+| LLM_API_URL | Endpoint for the chat completions API |
+| LLM_MODEL | Model name to use for the assistant |
+
+## How the AI Assistant Works
+
+The AI assistant uses a Vercel serverless function at /api/chat to keep the LLM key secure on the server instead of exposing it in the browser bundle. The assistant sends the current chat history to that proxy, which prepends a system prompt grounded in Muzainah's real background and forwards the request to the configured LLM provider.
+
+By default, the implementation is designed for OpenAI-compatible chat completions using the model specified in LLM_MODEL (for example, gpt-4o-mini). The provider endpoint is configured through LLM_API_URL.
 
 ## Deployment
 
@@ -92,7 +105,7 @@ npm run preview
 1. Push the project to GitHub.
 2. Create a new Vercel project.
 3. Import the repository.
-4. Set the environment variables in Vercel project settings.
+4. Set LLM_API_KEY, LLM_API_URL, and LLM_MODEL in the Vercel dashboard under Project Settings → Environment Variables.
 5. Deploy.
 
 ### Netlify
@@ -103,14 +116,12 @@ npm run preview
 
 ## Screenshots
 
-Add screenshots here as the project evolves:
-
-- Home page
-- About page
-- Skills page
-- Projects page
-- Contact page
-- AI Assistant page
+![Home page](./screenshots/home.png)
+![About page](./screenshots/about.png)
+![Skills page](./screenshots/skills.png)
+![Projects page](./screenshots/projects.png)
+![Contact page](./screenshots/contact.png)
+![Assistant page](./screenshots/assistant.png)
 
 ## Notes
 
