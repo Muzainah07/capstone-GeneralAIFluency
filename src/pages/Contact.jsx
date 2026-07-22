@@ -22,6 +22,7 @@ const contactLinks = [
 export default function Contact() {
   const [formData, setFormData] = useState({ name: '', email: '', subject: '', message: '' })
   const [status, setStatus] = useState('idle')
+  const [errorMessage, setErrorMessage] = useState('')
 
   function handleChange(event) {
     setFormData((current) => ({ ...current, [event.target.name]: event.target.value }))
@@ -30,37 +31,54 @@ export default function Contact() {
   function handleSubmit(event) {
     event.preventDefault()
     setStatus('sending')
+    setErrorMessage('')
 
-    const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID
-    const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID
-    const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY
+    // EmailJS credentials are read from Vite environment variables in the local .env file.
+    const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID?.trim()
+    const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID?.trim()
+    const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY?.trim()
 
     if (!serviceId || !templateId || !publicKey) {
       setStatus('error')
+      setErrorMessage(
+        'Email service is not configured yet. Please contact me directly using the email or LinkedIn links.',
+      )
       return
     }
 
-    emailjs
-      .send(
-        serviceId,
-        templateId,
-        {
-          from_name: formData.name,
-          from_email: formData.email,
-          subject: formData.subject,
-          message: formData.message,
-          to_email: 'muzainahfaisal.mf@gmail.com',
-        },
-        publicKey,
+    const templateParams = {
+      from_name: formData.name,
+      from_email: formData.email,
+      subject: formData.subject,
+      message: formData.message,
+      to_email: 'muzainahfaisal.mf@gmail.com',
+    }
+
+    try {
+      emailjs.init(publicKey)
+
+      emailjs
+        .send(serviceId, templateId, templateParams, publicKey)
+        .then(() => {
+          setStatus('success')
+          setErrorMessage('')
+          setFormData({ name: '', email: '', subject: '', message: '' })
+        })
+        .catch((error) => {
+          const details = error?.text || error?.message || 'Unknown EmailJS error'
+          console.error('EmailJS error:', details, error)
+          setStatus('error')
+          setErrorMessage(
+            'Unable to send your message right now. Please try again later or contact me directly.',
+          )
+        })
+    } catch (error) {
+      console.error('EmailJS initialization error:', error)
+      setStatus('error')
+      setErrorMessage(
+        'Unable to send your message right now. Please try again later or contact me directly.',
       )
-      .then(() => {
-        setStatus('success')
-        setFormData({ name: '', email: '', subject: '', message: '' })
-      })
-      .catch((error) => {
-        console.error('EmailJS error:', error)
-        setStatus('error')
-      })
+    }
   }
 
   return (
@@ -125,11 +143,7 @@ export default function Contact() {
           </button>
 
           {status === 'success' && <p className="form-feedback success">Message sent successfully.</p>}
-          {status === 'error' && (
-            <p className="form-feedback error">
-              The message could not be sent. Please check your EmailJS Service ID, Template ID, and Public Key in your .env file.
-            </p>
-          )}
+          {status === 'error' && <p className="form-feedback error">{errorMessage}</p>}
           <p className="form-note">
             Configure your EmailJS Service ID, Template ID, and Public Key in your local .env file.
           </p>
