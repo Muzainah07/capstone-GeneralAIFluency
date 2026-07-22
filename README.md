@@ -118,9 +118,7 @@ By default, the implementation is designed for OpenAI-compatible chat completion
 
 ![Home page](./screenshots/home.png)
 ![About page](./screenshots/about.png)
-![Skills page](./screenshots/skills.png)
 ![Projects page](./screenshots/projects.png)
-![Contact page](./screenshots/contact.png)
 ![Assistant page](./screenshots/assistant.png)
 
 ## Notes
