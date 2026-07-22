@@ -14,7 +14,7 @@ export default function Navbar({ theme, onToggleTheme }) {
     <header className="topbar">
       <div>
         <p className="brand">Muzainah Faisal</p>
-        <span className="tagline">AI & Frontend Developer</span>
+        <span className="tagline">BS Computer Science Undergraduate</span>
       </div>
 
       <div className="nav-actions">
